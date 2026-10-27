@@ -2,16 +2,20 @@
 
 GCIS（Global Citizenship Inquiry Studies）の個人探究で使う、生徒用の探究ノートアプリです。
 
-- 生徒画面：`index.html`（@tokyo.soka.ed.jp でログイン）
-- 教員画面：`teacher.html`（@soka.ed.jp でログイン）
-- 動きだけ見る：URLの最後に `?demo` をつける（保存されません。教員画面のデモは架空のデータ）
+- 入口は1つ：`index.html`。ログインしたアドレスで振り分けます（@tokyo.soka.ed.jp → 生徒画面、@soka.ed.jp → 教員画面）
+- 教員は右上の「生徒画面へ／教員画面へ」で切り替え。生徒画面での入力は「テスト」として保存されます
+- `teacher.html` はトップへ移動するだけのページです（古いブックマーク用）
+- 動きだけ見る：URLの最後に `?demo` をつける（保存されません。生徒役・教員役を選べます。教員画面のデータは架空）
 
 ## ファイルの役割（フォルダは使わず、すべてこの階層に置く）
 | ファイル | 役割 |
 |---|---|
-| `index.html` / `student.js` | 生徒画面 |
-| `teacher.html` / `teacher.js` | 教員画面 |
+| `index.html` / `app.js` | 入口（ログインと振り分け） |
+| `student.js` | 生徒画面 |
+| `teacher.js` | 教員画面 |
+| `teacher.html` | トップへ移動するだけ |
 | `common.js` | 共通（ログイン・保存・ドメインの設定） |
+| `themes.js` | テーマの例（入口B）。年度が変わったら差し替える |
 | `style.css` | 見た目 |
 | `firebase-config.js` | Firebase の設定（先生が一度だけ書き換える。更新用の zip には入らない） |
 | `firestore.rules` | アクセスのルール（Firebase コンソールに貼る控え） |
@@ -30,8 +34,9 @@ GCIS（Global Citizenship Inquiry Studies）の個人探究で使う、生徒用
 - ファイルを減らすときは、Claude が削除するファイル名を伝える（アップロードでは消えないため）
 
 ## データ（Firestore）
-- `students/{uid}`：email・class（0〜8、0は動作確認用）・number・createdAt・updatedAt
-- `notes/{uid}_L01`：uid・lesson・class・number・step（0〜4）・submitted・data（入力内容）・updatedAt・submittedAt
-- 生徒は自分のデータだけ、教員は全員のデータを読める。教員は書き込みできない。
+- `students/{uid}`：email・ki（期＝アドレスの頭2桁、数字でなければ空）・class（0〜8、0はテスト）・number（教員のテストは0）・createdAt・updatedAt
+- `notes/{uid}_L01`：uid・lesson・ki・class・number・step（0〜4）・submitted・data（入力内容）・updatedAt・submittedAt
+- data（L01）：route（A＝3つの質問／B＝テーマの例）・odai1〜3・theme・themeWhere・kw1〜3・setsu（説）・hikkakari（ひっかかり）・ippo・ippoDate・yosou・geminiLink
+- 生徒は自分のデータだけ、教員は全員のデータを読める。教員が書けるのは自分の「テスト」だけ。
 
 生徒の個人データはこのリポジトリには置きません（Firebase にだけ保存されます）。

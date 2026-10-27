@@ -126,3 +126,36 @@ details.help { margin-top: 8px; font-size: 15px; } details.help summary { cursor
 dialog { border: 0; border-radius: var(--radius); padding: 0; max-width: 640px; width: calc(100% - 32px); }
 dialog::backdrop { background: rgba(0,0,0,.35); }
 .dlg { padding: 20px; } .dlg-head { display: flex; justify-content: space-between; align-items: center; }
+
+/* ---------- 第2版で追加 ---------- */
+.acct { display: inline-flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.addr { color: var(--sub); max-width: 22em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tag { background: var(--sun); color: var(--ink); font-weight: 700; font-size: 13px; padding: 1px 10px; border-radius: 999px; }
+@media (max-width: 480px) { .addr { max-width: 12em; } }
+
+.lead { margin-top: 0; }
+.switch { margin: 18px 0 0; }
+.field .short { margin-top: 4px; }
+
+/* 書き出しのボタン */
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 6px; }
+.chip { font: inherit; font-size: 14px; border: 1px solid var(--accent); color: var(--accent); background: var(--accent-soft);
+  border-radius: 999px; padding: 2px 12px; cursor: pointer; }
+.chip:hover { background: #d3e8e0; }
+
+/* テーマの例 */
+.themes { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; margin: 8px 0 4px; }
+.theme { font: inherit; font-size: 15px; line-height: 1.5; text-align: left; border: 2px solid var(--line); background: #fffdf8;
+  border-radius: 12px; padding: 10px 12px; cursor: pointer; color: var(--ink); }
+.theme:hover { border-color: var(--accent); }
+.theme.on { border-color: var(--accent); background: var(--accent-soft); font-weight: 700; }
+
+/* 方法の見出し */
+.mt { font-style: normal; font-size: 12px; background: var(--accent); color: #fff; border-radius: 999px; padding: 0 8px; margin-left: 4px; }
+.methods { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: -4px 0 14px; }
+.mchip { font-size: 13px; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 1px 10px; white-space: nowrap; }
+.mchip b { font-size: 15px; } .mchip.zero { background: var(--warn-soft); color: var(--warn); }
+
+/* 教員画面 */
+select.ki { width: auto; padding: 3px 10px; border-radius: 999px; font-size: 15px; margin-right: 6px; }
+.addr-cell { font-weight: 500; font-size: 13px; }

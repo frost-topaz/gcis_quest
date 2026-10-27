@@ -1,35 +1,43 @@
 rules_version = '2';
-// 探究ノート（GCIS）の Firestore ルール
+// 探究ノート（GCIS）の Firestore ルール（第2版）
 // Firebase コンソール → Firestore Database → ルール に全文を貼って「公開」する
 // 生徒：@tokyo.soka.ed.jp … 自分のデータだけ読み書きできる
-// 教員：@soka.ed.jp      … 全員のデータを読める（書き込みはできない）
+// 教員：@soka.ed.jp      … 全員のデータを読める。書けるのは自分の「テスト」だけ
+// 期（ki）：アドレスの頭2桁（例 "59"）。数字で始まらないアドレスは ""
 service cloud.firestore {
   match /databases/{database}/documents {
 
     function signedIn() {
       return request.auth != null && request.auth.token.email_verified == true;
     }
+    function email() { return request.auth.token.email.lower(); }
     function isStudent() {
-      return signedIn() && request.auth.token.email.lower().matches('.*@tokyo[.]soka[.]ed[.]jp');
+      return signedIn() && email().matches('.*@tokyo[.]soka[.]ed[.]jp');
     }
     function isTeacher() {
       // 「@soka.ed.jp」で終わるもの。@tokyo.soka.ed.jp は含まれない
-      return signedIn() && request.auth.token.email.lower().matches('.*@soka[.]ed[.]jp');
+      return signedIn() && email().matches('.*@soka[.]ed[.]jp');
     }
-    function validClass(c) { return c is int && c >= 0 && c <= 8; }     // 0 は動作確認用
+    function validKi(k) {
+      return k is string && (
+        (k.matches('^[0-9][0-9]$') && email().matches('^' + k + '.*'))
+        || (k == '' && !email().matches('^[0-9][0-9].*')));
+    }
+    function validClass(c) { return c is int && c >= 0 && c <= 8; }     // 0 は動作確認用（テスト）
     function validNumber(n) { return n is int && n >= 1 && n <= 41; }
     function myProfile() {
       return get(/databases/$(database)/documents/students/$(request.auth.uid)).data;
     }
 
-    // 生徒のプロフィール（クラス・番号）
+    // プロフィール（期・クラス・番号）。教員は「テスト・番号0」だけ作れる
     match /students/{uid} {
       allow read: if isTeacher() || (isStudent() && request.auth.uid == uid);
-      allow create, update: if isStudent() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['email', 'class', 'number', 'createdAt', 'updatedAt'])
+      allow create, update: if request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['email', 'ki', 'class', 'number', 'createdAt', 'updatedAt'])
         && request.resource.data.email == request.auth.token.email
-        && validClass(request.resource.data['class'])
-        && validNumber(request.resource.data.number);
+        && validKi(request.resource.data.ki)
+        && ((isStudent() && validClass(request.resource.data['class']) && validNumber(request.resource.data.number))
+          || (isTeacher() && request.resource.data['class'] == 0 && request.resource.data.number == 0));
       allow delete: if false;
     }
 
@@ -37,15 +45,17 @@ service cloud.firestore {
     match /notes/{noteId} {
       allow read: if isTeacher()
         || (isStudent() && noteId.matches(request.auth.uid + '_L[0-9][0-9]'));
-      allow create, update: if isStudent()
+      allow create, update: if (isStudent() || isTeacher())
         && noteId == request.auth.uid + '_' + request.resource.data.lesson
         && request.resource.data.lesson in ['L01']
         && request.resource.data.uid == request.auth.uid
-        && request.resource.data.keys().hasOnly(['uid', 'lesson', 'class', 'number', 'step', 'submitted', 'data', 'updatedAt', 'submittedAt'])
+        && request.resource.data.keys().hasOnly(['uid', 'lesson', 'ki', 'class', 'number', 'step', 'submitted', 'data', 'updatedAt', 'submittedAt'])
         && request.resource.data.data is map
         && request.resource.data.data.size() <= 30
+        && request.resource.data.ki == myProfile().ki
         && request.resource.data['class'] == myProfile()['class']
-        && request.resource.data.number == myProfile().number;
+        && request.resource.data.number == myProfile().number
+        && (isStudent() || request.resource.data['class'] == 0);
       allow delete: if false;
     }
   }
