@@ -1,0 +1,52 @@
+rules_version = '2';
+// 探究ノート（GCIS）の Firestore ルール
+// Firebase コンソール → Firestore Database → ルール に全文を貼って「公開」する
+// 生徒：@tokyo.soka.ed.jp … 自分のデータだけ読み書きできる
+// 教員：@soka.ed.jp      … 全員のデータを読める（書き込みはできない）
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    function isStudent() {
+      return signedIn() && request.auth.token.email.lower().matches('.*@tokyo[.]soka[.]ed[.]jp');
+    }
+    function isTeacher() {
+      // 「@soka.ed.jp」で終わるもの。@tokyo.soka.ed.jp は含まれない
+      return signedIn() && request.auth.token.email.lower().matches('.*@soka[.]ed[.]jp');
+    }
+    function validClass(c) { return c is int && c >= 0 && c <= 8; }     // 0 は動作確認用
+    function validNumber(n) { return n is int && n >= 1 && n <= 41; }
+    function myProfile() {
+      return get(/databases/$(database)/documents/students/$(request.auth.uid)).data;
+    }
+
+    // 生徒のプロフィール（クラス・番号）
+    match /students/{uid} {
+      allow read: if isTeacher() || (isStudent() && request.auth.uid == uid);
+      allow create, update: if isStudent() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['email', 'class', 'number', 'createdAt', 'updatedAt'])
+        && request.resource.data.email == request.auth.token.email
+        && validClass(request.resource.data['class'])
+        && validNumber(request.resource.data.number);
+      allow delete: if false;
+    }
+
+    // 各回のノート（ID は「uid_L01」の形）
+    match /notes/{noteId} {
+      allow read: if isTeacher()
+        || (isStudent() && noteId.matches(request.auth.uid + '_L[0-9][0-9]'));
+      allow create, update: if isStudent()
+        && noteId == request.auth.uid + '_' + request.resource.data.lesson
+        && request.resource.data.lesson in ['L01']
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'lesson', 'class', 'number', 'step', 'submitted', 'data', 'updatedAt', 'submittedAt'])
+        && request.resource.data.data is map
+        && request.resource.data.data.size() <= 30
+        && request.resource.data['class'] == myProfile()['class']
+        && request.resource.data.number == myProfile().number;
+      allow delete: if false;
+    }
+  }
+}
