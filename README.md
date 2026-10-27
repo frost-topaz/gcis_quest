@@ -6,15 +6,28 @@ GCIS（Global Citizenship Inquiry Studies）の個人探究で使う、生徒用
 - 教員画面：`teacher.html`（@soka.ed.jp でログイン）
 - 動きだけ見る：URLの最後に `?demo` をつける（保存されません。教員画面のデモは架空のデータ）
 
+## ファイルの役割（フォルダは使わず、すべてこの階層に置く）
+| ファイル | 役割 |
+|---|---|
+| `index.html` / `student.js` | 生徒画面 |
+| `teacher.html` / `teacher.js` | 教員画面 |
+| `common.js` | 共通（ログイン・保存・ドメインの設定） |
+| `style.css` | 見た目 |
+| `firebase-config.js` | Firebase の設定（先生が一度だけ書き換える。更新用の zip には入らない） |
+| `firestore.rules` | アクセスのルール（Firebase コンソールに貼る控え） |
+
 ## 初回だけの設定
-1. `js/firebase-config.js` を GitHub 上で開き、鉛筆マークで編集。Firebase の `firebaseConfig` の値を貼って保存
+1. `firebase-config.js` を GitHub 上で開き、鉛筆マークで編集。Firebase の `firebaseConfig` の値を貼って保存
 2. Firebase コンソール → Firestore Database → ルール に `firestore.rules` の全文を貼って「公開」
 3. Settings → Pages → Branch を `main` / `(root)` にして Save
 4. Firebase コンソール → Authentication → 設定 → 承認済みドメイン に `frost-topaz.github.io` があることを確認
 
 ## 更新のしかた
-Claude から届く zip を展開し、「Add file → Upload files」で中身を上書きアップロード。
-`js/firebase-config.js` は次回以降の zip には入りません。
+1. Claude から届いたファイルを「Add file → Upload files」にドラッグ
+2. コミット画面で「Create a new branch」を選んで Propose changes → PR を作ってマージ
+3. 「テスト」クラスで動作確認。問題があれば、その PR の「Revert」で元に戻す
+- 授業のある月曜日には更新しない
+- ファイルを減らすときは、Claude が削除するファイル名を伝える（アップロードでは消えないため）
 
 ## データ（Firestore）
 - `students/{uid}`：email・class（0〜8、0は動作確認用）・number・createdAt・updatedAt
