@@ -5,10 +5,11 @@
 // ※ このファイルは次回以降の zip には入りません（上書きされません）。
 // ============================================================
 export const firebaseConfig = {
-  apiKey: "ここに貼る",
-  authDomain: "ここに貼る",
-  projectId: "ここに貼る",
-  storageBucket: "ここに貼る",
-  messagingSenderId: "ここに貼る",
-  appId: "ここに貼る"
+  apiKey: "AIzaSyBX1KEZq2-wqNlI3RO0RmSGEmPvBhATEic",
+  authDomain: "gcis-quest.firebaseapp.com",
+  projectId: "gcis-quest",
+  storageBucket: "gcis-quest.firebasestorage.app",
+  messagingSenderId: "127110083342",
+  appId: "1:127110083342:web:319e5d0123c58c99b61d5f"
 };
+
